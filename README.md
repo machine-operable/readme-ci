@@ -11,11 +11,11 @@ The examples in a project's README are the first thing humans and AI assistants 
 | Stage | Status |
 |---|---|
 | Extract fenced code snippets from Markdown | ✅ works |
-| Classify snippets (runnable vs. illustrative) | ⏳ next |
+| Classify snippets (runnable / placeholder / unsafe / needs-network) | ✅ heuristic v0 |
 | Execute snippets in a network-isolated sandbox | ⏳ planned |
 | Pass/fail report + CI gate | ⏳ planned |
 
-Nothing is executed yet. Today doc-ci only *reads* your docs and inventories the snippets in them.
+Nothing is executed yet. Today doc-ci only *reads* your docs, inventories the snippets, and classifies what could safely be run later.
 
 ## Quick start
 
@@ -25,11 +25,10 @@ pip install -e ".[dev]"
 doc-ci scan README.md
 ```
 
-`scan` lists every fenced code block it finds, with language and line numbers:
+`scan` lists every fenced code block it finds, with language, line numbers, and a conservative classification:
 
 ```
-README.md:22-26  [bash]  3 line(s)
-...
+README.md:22-26  [bash]  3 line(s)  needs-network
 ```
 
 Add `--json` for machine-readable output.

@@ -31,6 +31,7 @@ doc-ci scan README.md --json   # machine-readable
 ## Layout
 
 - `src/doc_ci/extractor.py` — Markdown fenced-block extraction (state machine, no regex-only shortcuts, no dependencies)
+- `src/doc_ci/classifier.py` — conservative snippet classification (runnable / unsupported-language / placeholder / unsafe / needs-network); never executes anything
 - `src/doc_ci/cli.py` — argparse CLI, `scan` subcommand
 - `tests/` — pytest suite
 

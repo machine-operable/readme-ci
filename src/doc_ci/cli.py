@@ -7,6 +7,7 @@ import json
 import sys
 from pathlib import Path
 
+from .classifier import classify
 from .extractor import Snippet, extract_snippets
 
 
@@ -33,14 +34,31 @@ def cmd_scan(args: argparse.Namespace) -> int:
             continue
         snippets.extend(extract_snippets(text, path=str(file)))
 
+    rows = []
+    for s in snippets:
+        c = classify(s)
+        rows.append((s, c))
+
     if args.json:
-        print(json.dumps([s.to_dict() for s in snippets], indent=2))
+        payload = [
+            {**s.to_dict(), "category": c.category, "reason": c.reason}
+            for s, c in rows
+        ]
+        print(json.dumps(payload, indent=2))
     else:
-        for s in snippets:
+        for s, c in rows:
             lang = s.lang or "no-lang"
             n = len(s.code.splitlines())
-            print(f"{s.path}:{s.start_line}-{s.end_line}  [{lang}]  {n} line(s)")
-        print(f"\n{len(snippets)} snippet(s) found")
+            print(
+                f"{s.path}:{s.start_line}-{s.end_line}  [{lang}]  "
+                f"{n} line(s)  {c.category}"
+            )
+        total = len(rows)
+        by_category: dict[str, int] = {}
+        for _, c in rows:
+            by_category[c.category] = by_category.get(c.category, 0) + 1
+        summary = ", ".join(f"{k}: {v}" for k, v in sorted(by_category.items()))
+        print(f"\n{total} snippet(s) found" + (f" ({summary})" if summary else ""))
 
     return 1 if errors else 0
 
