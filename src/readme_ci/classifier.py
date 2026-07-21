@@ -1,12 +1,12 @@
 """Heuristic classification of extracted snippets.
 
-Decides what doc-ci may eventually do with a snippet. Deliberately
+Decides what readme-ci may eventually do with a snippet. Deliberately
 conservative: anything ambiguous is kept away from the "runnable" bucket.
 Nothing in this module executes anything.
 
 Categories:
     runnable              safe to attempt inside the sandbox (when it exists)
-    unsupported-language  language doc-ci does not know how to run
+    unsupported-language  language readme-ci does not know how to run
     placeholder           contains fill-me-in tokens; illustrative, not executable
     unsafe                destructive or host-touching patterns; never run
     needs-network         would require network/external services (sandbox is offline)
@@ -108,7 +108,7 @@ def classify(snippet: Snippet) -> Classification:
     """Classify *snippet* without executing anything."""
     # An explicit author directive wins over everything else.
     if snippet.skip:
-        return Classification(DIRECTIVE_SKIP, "doc-ci:skip directive")
+        return Classification(DIRECTIVE_SKIP, "readme-ci:skip directive")
 
     lang = SUPPORTED_LANGS.get(snippet.lang)
     if lang is None:

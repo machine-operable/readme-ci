@@ -4,8 +4,8 @@ These use a FakeSandbox so the orchestration logic is verified without any
 dependency on Docker. Nothing here executes real snippet content.
 """
 
-from doc_ci.extractor import Snippet
-from doc_ci.runner import (
+from readme_ci.extractor import Snippet
+from readme_ci.runner import (
     ERROR,
     FAILED,
     PASSED,
@@ -188,7 +188,7 @@ def test_docker_available_returns_bool_without_raising():
 
 
 def test_docker_missing_binary_is_unavailable_not_crash():
-    box = DockerSandbox(docker_bin="doc-ci-no-such-docker-binary-zzz")
+    box = DockerSandbox(docker_bin="readme-ci-no-such-docker-binary-zzz")
     assert box.available() is False
 
 
@@ -200,7 +200,7 @@ def test_docker_default_images_cover_supported_languages():
 
 def test_missing_docker_makes_runnable_snippet_skip_safely():
     # End-to-end: a real DockerSandbox with no docker binary must skip, never run.
-    box = DockerSandbox(docker_bin="doc-ci-no-such-docker-binary-zzz")
+    box = DockerSandbox(docker_bin="readme-ci-no-such-docker-binary-zzz")
     results = run_snippets([snip("echo hi\n")], box)
     assert results[0].status == SKIPPED
     assert "no sandbox available" in results[0].reason

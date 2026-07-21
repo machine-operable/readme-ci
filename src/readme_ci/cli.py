@@ -1,4 +1,4 @@
-"""doc-ci command-line interface."""
+"""readme-ci command-line interface."""
 
 from __future__ import annotations
 
@@ -106,7 +106,7 @@ def _print_run_report(results: list) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="doc-ci",
+        prog="readme-ci",
         description="Test the code examples in your documentation.",
     )
     sub = parser.add_subparsers(dest="command", required=True)

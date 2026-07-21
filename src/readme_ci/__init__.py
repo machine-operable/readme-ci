@@ -1,4 +1,4 @@
-"""doc-ci: test the code examples in your documentation."""
+"""readme-ci: test the code examples in your documentation."""
 
 from .extractor import Snippet, extract_snippets
 

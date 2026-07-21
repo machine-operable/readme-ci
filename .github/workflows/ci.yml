@@ -21,6 +21,6 @@ jobs:
       - name: Test
         run: pytest
       - name: Dogfood — inventory our own README
-        run: doc-ci scan README.md
+        run: readme-ci scan README.md
       - name: Dogfood — run our own README examples
-        run: doc-ci run README.md
+        run: readme-ci run README.md

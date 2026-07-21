@@ -1,6 +1,6 @@
 """Tests for the snippet classifier. Nothing here executes snippet content."""
 
-from doc_ci.classifier import (
+from readme_ci.classifier import (
     DIRECTIVE_SKIP,
     NEEDS_NETWORK,
     PLACEHOLDER,
@@ -9,7 +9,7 @@ from doc_ci.classifier import (
     UNSUPPORTED,
     classify,
 )
-from doc_ci.extractor import Snippet
+from readme_ci.extractor import Snippet
 
 
 def snip(code: str, lang: str = "bash") -> Snippet:
@@ -81,7 +81,7 @@ def test_python_subprocess_is_unsafe():
 
 
 def test_pip_install_needs_network():
-    assert classify(snip("pip install doc-ci\n")).category == NEEDS_NETWORK
+    assert classify(snip("pip install readme-ci\n")).category == NEEDS_NETWORK
 
 
 def test_git_clone_needs_network():

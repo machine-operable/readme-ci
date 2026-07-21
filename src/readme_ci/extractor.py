@@ -6,12 +6,12 @@ whose first word is treated as the language, closed by a fence of the same
 character at least as long as the opener. Unclosed fences run to end of file,
 matching how most renderers display them.
 
-Authors can mark a snippet to be skipped (never executed by `doc-ci run`)
+Authors can mark a snippet to be skipped (never executed by `readme-ci run`)
 without polluting the copyable code, in either of two ways:
 
-    ```python doc-ci:skip            (annotation in the fence info string)
+    ```python readme-ci:skip            (annotation in the fence info string)
 
-    <!-- doc-ci:skip -->             (HTML comment on the line above the fence)
+    <!-- readme-ci:skip -->             (HTML comment on the line above the fence)
     ```python
 """
 
@@ -21,7 +21,7 @@ import re
 from dataclasses import asdict, dataclass
 
 # Matches the skip directive, tolerating a space after the colon, case-insensitive.
-_SKIP_DIRECTIVE = re.compile(r"doc-ci:\s*skip\b", re.IGNORECASE)
+_SKIP_DIRECTIVE = re.compile(r"readme-ci:\s*skip\b", re.IGNORECASE)
 
 
 @dataclass
@@ -34,7 +34,7 @@ class Snippet:
     start_line: int  # 1-based line number of the opening fence
     end_line: int  # 1-based line number of the closing fence (or last line if unclosed)
     info: str = ""  # full info string after the opening fence (lang + any annotations)
-    skip: bool = False  # author asked to skip execution via a doc-ci:skip directive
+    skip: bool = False  # author asked to skip execution via a readme-ci:skip directive
 
     def to_dict(self) -> dict:
         return asdict(self)

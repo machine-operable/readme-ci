@@ -4,7 +4,7 @@ Instructions for AI coding agents working in this repository. This file is kept 
 
 ## What this project is
 
-`doc-ci` extracts fenced code snippets from Markdown documentation and will (in later versions) execute them in a sandbox to detect broken examples. Python, stdlib-only at runtime.
+`readme-ci` extracts fenced code snippets from Markdown documentation and will (in later versions) execute them in a sandbox to detect broken examples. Python, stdlib-only at runtime.
 
 ## Setup
 
@@ -24,18 +24,18 @@ All tests must pass before committing. New extractor behavior requires new test 
 ## Run
 
 ```bash
-doc-ci scan README.md          # human-readable snippet inventory (read-only)
-doc-ci scan README.md --json   # machine-readable
-doc-ci run README.md           # execute runnable snippets in a sandbox
-doc-ci run README.md --json    # machine-readable pass/fail results
+readme-ci scan README.md          # human-readable snippet inventory (read-only)
+readme-ci scan README.md --json   # machine-readable
+readme-ci run README.md           # execute runnable snippets in a sandbox
+readme-ci run README.md --json    # machine-readable pass/fail results
 ```
 
 ## Layout
 
-- `src/doc_ci/extractor.py` — Markdown fenced-block extraction (state machine, no regex-only shortcuts, no dependencies)
-- `src/doc_ci/classifier.py` — conservative snippet classification (runnable / unsupported-language / placeholder / unsafe / needs-network); never executes anything
-- `src/doc_ci/runner.py` — sandboxed execution (`Sandbox` protocol + `DockerSandbox`); only runs `runnable` snippets, and only inside the sandbox
-- `src/doc_ci/cli.py` — argparse CLI, `scan` and `run` subcommands
+- `src/readme_ci/extractor.py` — Markdown fenced-block extraction (state machine, no regex-only shortcuts, no dependencies)
+- `src/readme_ci/classifier.py` — conservative snippet classification (runnable / unsupported-language / placeholder / unsafe / needs-network); never executes anything
+- `src/readme_ci/runner.py` — sandboxed execution (`Sandbox` protocol + `DockerSandbox`); only runs `runnable` snippets, and only inside the sandbox
+- `src/readme_ci/cli.py` — argparse CLI, `scan` and `run` subcommands
 - `tests/` — pytest suite
 
 ## Conventions

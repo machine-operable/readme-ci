@@ -182,7 +182,7 @@ class DockerSandbox:
             return ExecOutcome(
                 exit_code=124,
                 stdout=_as_text(exc.stdout),
-                stderr=_as_text(exc.stderr) + f"\n[doc-ci] killed after {timeout_s}s",
+                stderr=_as_text(exc.stderr) + f"\n[readme-ci] killed after {timeout_s}s",
                 timed_out=True,
                 duration_s=duration,
             )
