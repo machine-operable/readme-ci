@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .classifier import classify
 from .extractor import Snippet, extract_snippets
+from .runner import DockerSandbox, run_snippets, summarize
 
 
 def _collect_files(raw_paths: list[str]) -> list[Path]:
@@ -22,10 +23,11 @@ def _collect_files(raw_paths: list[str]) -> list[Path]:
     return files
 
 
-def cmd_scan(args: argparse.Namespace) -> int:
+def _gather_snippets(raw_paths: list[str]) -> tuple[list[Snippet], int]:
+    """Extract snippets from all given paths. Returns (snippets, read_errors)."""
     snippets: list[Snippet] = []
     errors = 0
-    for file in _collect_files(args.paths):
+    for file in _collect_files(raw_paths):
         try:
             text = file.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError) as exc:
@@ -33,6 +35,11 @@ def cmd_scan(args: argparse.Namespace) -> int:
             errors += 1
             continue
         snippets.extend(extract_snippets(text, path=str(file)))
+    return snippets, errors
+
+
+def cmd_scan(args: argparse.Namespace) -> int:
+    snippets, errors = _gather_snippets(args.paths)
 
     rows = []
     for s in snippets:
@@ -63,6 +70,27 @@ def cmd_scan(args: argparse.Namespace) -> int:
     return 1 if errors else 0
 
 
+def cmd_run(args: argparse.Namespace) -> int:
+    snippets, errors = _gather_snippets(args.paths)
+    sandbox = DockerSandbox()
+    results = run_snippets(snippets, sandbox, timeout_s=args.timeout)
+
+    if args.json:
+        print(json.dumps([r.to_dict() for r in results], indent=2))
+    else:
+        for r in results:
+            lang = r.snippet.lang or "no-lang"
+            loc = f"{r.snippet.path}:{r.snippet.start_line}-{r.snippet.end_line}"
+            print(f"{loc}  [{lang}]  {r.status.upper()}  ({r.reason})")
+        counts = summarize(results)
+        summary = ", ".join(f"{k}: {v}" for k, v in sorted(counts.items()))
+        print(f"\n{len(results)} snippet(s)" + (f" — {summary}" if summary else ""))
+
+    # CI gate: fail on any failed/errored snippet, or on read errors.
+    failed = summarize(results).get("failed", 0) + summarize(results).get("error", 0)
+    return 1 if (failed or errors) else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="doc-ci",
@@ -85,6 +113,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Emit a machine-readable JSON inventory",
     )
     scan.set_defaults(func=cmd_scan)
+
+    run = sub.add_parser(
+        "run",
+        help="Execute runnable snippets in a sandbox and report pass/fail",
+    )
+    run.add_argument(
+        "paths",
+        nargs="+",
+        help="Markdown files or directories (directories are searched for *.md recursively)",
+    )
+    run.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON results",
+    )
+    run.add_argument(
+        "--timeout",
+        type=float,
+        default=30.0,
+        help="Per-snippet timeout in seconds (default: 30)",
+    )
+    run.set_defaults(func=cmd_run)
 
     return parser
 

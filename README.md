@@ -12,10 +12,13 @@ The examples in a project's README are the first thing humans and AI assistants 
 |---|---|
 | Extract fenced code snippets from Markdown | ✅ works |
 | Classify snippets (runnable / placeholder / unsafe / needs-network) | ✅ heuristic v0 |
-| Execute snippets in a network-isolated sandbox | ⏳ planned |
-| Pass/fail report + CI gate | ⏳ planned |
+| Execute snippets in a network-isolated Docker sandbox | ✅ implemented |
+| Pass/fail report + CI gate | ✅ `doc-ci run` |
 
-Nothing is executed yet. Today doc-ci only *reads* your docs, inventories the snippets, and classifies what could safely be run later.
+`doc-ci scan` only *reads* your docs (no execution). `doc-ci run` executes the
+snippets classified as runnable — but only inside a locked-down Docker sandbox.
+When no sandbox is available, runnable snippets are reported as skipped: doc-ci
+never falls back to running untrusted code on the host.
 
 ## Quick start
 
@@ -31,7 +34,16 @@ doc-ci scan README.md
 README.md:22-26  [bash]  3 line(s)  needs-network
 ```
 
-Add `--json` for machine-readable output.
+To actually execute the runnable examples (in a sandbox) and get a pass/fail
+report suitable for CI:
+
+```bash
+doc-ci run README.md
+doc-ci run docs/ --timeout 20 --json
+```
+
+`run` exits non-zero if any snippet fails, so it works as a CI gate. Add
+`--json` to either command for machine-readable output.
 
 ## Safety design (the rule that governs this project)
 
