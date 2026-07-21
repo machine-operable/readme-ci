@@ -5,11 +5,23 @@ backticks or tildes (indented at most three spaces), optional info string
 whose first word is treated as the language, closed by a fence of the same
 character at least as long as the opener. Unclosed fences run to end of file,
 matching how most renderers display them.
+
+Authors can mark a snippet to be skipped (never executed by `doc-ci run`)
+without polluting the copyable code, in either of two ways:
+
+    ```python doc-ci:skip            (annotation in the fence info string)
+
+    <!-- doc-ci:skip -->             (HTML comment on the line above the fence)
+    ```python
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass
+
+# Matches the skip directive, tolerating a space after the colon, case-insensitive.
+_SKIP_DIRECTIVE = re.compile(r"doc-ci:\s*skip\b", re.IGNORECASE)
 
 
 @dataclass
@@ -21,9 +33,15 @@ class Snippet:
     code: str
     start_line: int  # 1-based line number of the opening fence
     end_line: int  # 1-based line number of the closing fence (or last line if unclosed)
+    info: str = ""  # full info string after the opening fence (lang + any annotations)
+    skip: bool = False  # author asked to skip execution via a doc-ci:skip directive
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+
+def _has_skip_directive(text: str) -> bool:
+    return bool(_SKIP_DIRECTIVE.search(text))
 
 
 def _fence_open(line: str) -> tuple[str, int, str] | None:
@@ -62,6 +80,8 @@ def extract_snippets(text: str, path: str = "<string>") -> list[Snippet]:
     fence_char = ""
     fence_len = 0
     lang = ""
+    info = ""
+    skip = False
     buf: list[str] = []
     start_line = 0
     last_line = 0
@@ -73,6 +93,9 @@ def extract_snippets(text: str, path: str = "<string>") -> list[Snippet]:
             if opened is not None:
                 fence_char, fence_len, info = opened
                 lang = info.split()[0].lower() if info else ""
+                # Skip directive: in the info string, or on the preceding line.
+                prev = lines[lineno - 2] if lineno >= 2 else ""
+                skip = _has_skip_directive(info) or _has_skip_directive(prev)
                 in_fence = True
                 buf = []
                 start_line = lineno
@@ -85,6 +108,8 @@ def extract_snippets(text: str, path: str = "<string>") -> list[Snippet]:
                         code="\n".join(buf) + ("\n" if buf else ""),
                         start_line=start_line,
                         end_line=lineno,
+                        info=info,
+                        skip=skip,
                     )
                 )
                 in_fence = False
@@ -99,6 +124,8 @@ def extract_snippets(text: str, path: str = "<string>") -> list[Snippet]:
                 code="\n".join(buf) + ("\n" if buf else ""),
                 start_line=start_line,
                 end_line=last_line,
+                info=info,
+                skip=skip,
             )
         )
 

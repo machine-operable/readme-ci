@@ -95,3 +95,44 @@ def test_crlf_tolerance():
     snips = extract_snippets(text)
     assert len(snips) == 1
     assert "echo hi" in snips[0].code
+
+
+def test_info_string_captured():
+    text = "```python title=example.py\nx = 1\n```\n"
+    snips = extract_snippets(text)
+    assert snips[0].info == "python title=example.py"
+    assert snips[0].lang == "python"
+
+
+def test_no_skip_by_default():
+    text = "```bash\necho hi\n```\n"
+    assert extract_snippets(text)[0].skip is False
+
+
+def test_skip_directive_in_info_string():
+    text = "```bash doc-ci:skip\necho hi\n```\n"
+    snips = extract_snippets(text)
+    assert snips[0].skip is True
+    assert snips[0].lang == "bash"  # lang still parsed as first token
+
+
+def test_skip_directive_in_preceding_html_comment():
+    text = "<!-- doc-ci:skip -->\n```bash\necho hi\n```\n"
+    snips = extract_snippets(text)
+    assert snips[0].skip is True
+
+
+def test_skip_directive_tolerates_space_after_colon():
+    text = "```bash doc-ci: skip\necho hi\n```\n"
+    assert extract_snippets(text)[0].skip is True
+
+
+def test_skip_directive_case_insensitive():
+    text = "```bash DOC-CI:SKIP\necho hi\n```\n"
+    assert extract_snippets(text)[0].skip is True
+
+
+def test_directive_two_lines_above_does_not_apply():
+    # Only the immediately preceding line counts, to stay predictable.
+    text = "<!-- doc-ci:skip -->\n\n```bash\necho hi\n```\n"
+    assert extract_snippets(text)[0].skip is False

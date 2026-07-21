@@ -1,6 +1,7 @@
 """Tests for the snippet classifier. Nothing here executes snippet content."""
 
 from doc_ci.classifier import (
+    DIRECTIVE_SKIP,
     NEEDS_NETWORK,
     PLACEHOLDER,
     RUNNABLE,
@@ -13,6 +14,20 @@ from doc_ci.extractor import Snippet
 
 def snip(code: str, lang: str = "bash") -> Snippet:
     return Snippet(path="x.md", lang=lang, code=code, start_line=1, end_line=2)
+
+
+def test_skip_directive_wins_over_everything():
+    # Even an otherwise-runnable snippet is directive-skip when marked.
+    s = Snippet(path="x.md", lang="bash", code="echo hi\n",
+                start_line=1, end_line=2, skip=True)
+    assert classify(s).category == DIRECTIVE_SKIP
+
+
+def test_skip_directive_wins_over_unsafe():
+    # The directive short-circuits before any other check.
+    s = Snippet(path="x.md", lang="bash", code="rm -rf /\n",
+                start_line=1, end_line=2, skip=True)
+    assert classify(s).category == DIRECTIVE_SKIP
 
 
 def test_plain_echo_is_runnable():

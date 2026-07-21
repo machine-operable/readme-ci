@@ -37,13 +37,26 @@ README.md:22-26  [bash]  3 line(s)  needs-network
 To actually execute the runnable examples (in a sandbox) and get a pass/fail
 report suitable for CI:
 
-```bash
+```bash doc-ci:skip
 doc-ci run README.md
 doc-ci run docs/ --timeout 20 --json
 ```
 
 `run` exits non-zero if any snippet fails, so it works as a CI gate. Add
 `--json` to either command for machine-readable output.
+
+### Skipping a snippet
+
+An example that shouldn't be executed — it needs a real service, is purely
+illustrative, or is intentionally broken — can be marked so `doc-ci run`
+leaves it alone, without adding noise to the code readers copy. Either:
+
+- put `doc-ci:skip` in the fence info string, right after the language
+  (e.g. an opening fence of `` ```python doc-ci:skip ``), or
+- put `<!-- doc-ci:skip -->` on the line immediately above the fence.
+
+The marker never appears in the copyable code, and the snippet is reported as
+`directive-skip` instead of being run.
 
 ## Safety design (the rule that governs this project)
 

@@ -78,17 +78,30 @@ def cmd_run(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps([r.to_dict() for r in results], indent=2))
     else:
-        for r in results:
-            lang = r.snippet.lang or "no-lang"
-            loc = f"{r.snippet.path}:{r.snippet.start_line}-{r.snippet.end_line}"
-            print(f"{loc}  [{lang}]  {r.status.upper()}  ({r.reason})")
-        counts = summarize(results)
-        summary = ", ".join(f"{k}: {v}" for k, v in sorted(counts.items()))
-        print(f"\n{len(results)} snippet(s)" + (f" — {summary}" if summary else ""))
+        _print_run_report(results)
 
     # CI gate: fail on any failed/errored snippet, or on read errors.
-    failed = summarize(results).get("failed", 0) + summarize(results).get("error", 0)
+    counts = summarize(results)
+    failed = counts.get("failed", 0) + counts.get("error", 0)
     return 1 if (failed or errors) else 0
+
+
+def _print_run_report(results: list) -> None:
+    for r in results:
+        lang = r.snippet.lang or "no-lang"
+        loc = f"{r.snippet.path}:{r.snippet.start_line}-{r.snippet.end_line}"
+        print(f"{r.status.upper():7} {loc}  [{lang}]  {r.reason}")
+        # For real failures, show why: the captured error output, indented.
+        if r.status in ("failed", "error") and r.outcome is not None:
+            detail = (r.outcome.stderr or r.outcome.stdout or "").strip()
+            if detail:
+                for line in detail.splitlines()[-8:]:
+                    print(f"        | {line}")
+
+    counts = summarize(results)
+    summary = ", ".join(f"{k}: {v}" for k, v in sorted(counts.items()))
+    verdict = "FAIL" if (counts.get("failed", 0) or counts.get("error", 0)) else "OK"
+    print(f"\n[{verdict}] {len(results)} snippet(s)" + (f" — {summary}" if summary else ""))
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -92,6 +92,16 @@ def test_unsupported_language_is_skipped():
     assert box.calls == []
 
 
+def test_skip_directive_snippet_is_not_executed():
+    box = FakeSandbox()
+    marked = Snippet(path="x.md", lang="bash", code="echo hi\n",
+                     start_line=1, end_line=2, skip=True)
+    results = run_snippets([marked], box)
+    assert results[0].status == SKIPPED
+    assert "directive-skip" in results[0].reason
+    assert box.calls == []  # author said skip; never ran
+
+
 def test_runnable_snippet_skipped_when_no_sandbox():
     box = FakeSandbox(available=False)
     results = run_snippets([snip("echo hi\n")], box)

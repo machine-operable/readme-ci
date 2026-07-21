@@ -24,6 +24,7 @@ UNSUPPORTED = "unsupported-language"
 PLACEHOLDER = "placeholder"
 UNSAFE = "unsafe"
 NEEDS_NETWORK = "needs-network"
+DIRECTIVE_SKIP = "directive-skip"
 
 #: Languages the (future) sandbox knows how to run, normalized.
 SUPPORTED_LANGS = {
@@ -105,6 +106,10 @@ def _first_match(code: str, patterns: list[re.Pattern]) -> str | None:
 
 def classify(snippet: Snippet) -> Classification:
     """Classify *snippet* without executing anything."""
+    # An explicit author directive wins over everything else.
+    if snippet.skip:
+        return Classification(DIRECTIVE_SKIP, "doc-ci:skip directive")
+
     lang = SUPPORTED_LANGS.get(snippet.lang)
     if lang is None:
         shown = snippet.lang or "none"
