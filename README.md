@@ -2,7 +2,7 @@
 
 **Test the code examples in your documentation — automatically, in CI.**
 
-The examples in a project's README are the first thing humans and AI assistants copy, and almost nobody tests them after writing them. The software changes, the examples don't, and they quietly break. readme-ci finds the code snippets in your Markdown documentation and (soon) executes them in a sealed sandbox, so "our examples always run" can be a CI-enforced promise instead of a hope.
+The examples in a project's README are the first thing humans and AI assistants copy, and almost nobody tests them after writing them. The software changes, the examples don't, and they quietly break. readme-ci finds the code snippets in your Markdown documentation and executes the runnable ones in a sealed sandbox, so "our examples always run" can be a CI-enforced promise instead of a hope.
 
 ## Status
 
@@ -21,6 +21,15 @@ When no sandbox is available, runnable snippets are reported as skipped: readme-
 never falls back to running untrusted code on the host.
 
 ## Quick start
+
+Install from PyPI:
+
+```bash readme-ci:skip
+pip install readme-ci
+readme-ci scan README.md
+```
+
+Or from source, for development:
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -60,7 +69,7 @@ The marker never appears in the copyable code, and the snippet is reported as
 
 ## Safety design (the rule that governs this project)
 
-Documentation snippets are untrusted input. When execution lands, it will be:
+Documentation snippets are untrusted input. Execution is:
 
 - **Sandboxed** — containers with networking disabled and strict timeouts
 - **Conservative** — snippets containing destructive patterns (`rm`, `sudo`, pipe-to-shell, credential placeholders like `YOUR_API_KEY`) are classified as non-runnable and skipped
@@ -68,7 +77,13 @@ Documentation snippets are untrusted input. When execution lands, it will be:
 
 ## Why this exists
 
-readme-ci is the first tool from [machine-operable](https://github.com/machine-operable), a research program measuring — and fixing — how reliably open source repositories work for the humans and AI agents that depend on them. Broken documentation examples don't just mislead newcomers anymore; they get learned and repeated by AI assistants at scale.
+readme-ci is the first tool from [Machine-Operable Open Source](https://machine-operable.org/) ([GitHub](https://github.com/machine-operable)), a research program measuring — and fixing — how reliably open source repositories work for the humans and AI agents that depend on them. Broken documentation examples don't just mislead newcomers anymore; they get learned and repeated by AI assistants at scale.
+
+## Feedback and background
+
+- Found a snippet readme-ci misclassifies, or an example it runs wrongly? [Open an issue](https://github.com/machine-operable/readme-ci/issues). False positives are bugs.
+- Overview of the work and related tools: [machine-operable documentation](https://oss-infrastructure-initiative.netlify.app/machine-operable-documentation) on the OSS Infrastructure Initiative site.
+- How the research behind it is done: [method and evidence rules](https://ecogetaway.github.io/method.html).
 
 ## License
 
